@@ -1,4 +1,4 @@
-# Hermes Aquarium Dashboard
+# Hermes Aquarium Agent
 
 A living, procedural aquarium dashboard for Raspberry Pi 4 that visualizes the Hermes agent's internal state through a hero angelfish. Built for LCD, IPS, and e-Ink displays.
 
@@ -17,8 +17,8 @@ A living, procedural aquarium dashboard for Raspberry Pi 4 that visualizes the H
 
 ```bash
 # Clone
-git clone git@github.com:drwjkirkpatrick-web/hermes-aquarium-dashboard.git
-cd hermes-aquarium-dashboard
+git clone git@github.com:drwjkirkpatrick-web/hermes-aquarium-agent.git
+cd hermes-aquarium-agent
 
 # Serve (any static server works)
 python3 -m http.server 8080
