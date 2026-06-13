@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Responsive viewport for Pi touchscreens -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Hermes Aquarium Dashboard</title>
+    <!-- Main stylesheet with Pi screen size profiles -->
+    <link rel="stylesheet" href="css/aquarium.css">
+</head>
+<body>
+    <!--
+      Hermes Aquarium Dashboard
+      A living canvas that reflects the agent's internal state through
+      the behavior of a hero angelfish.
+
+      Supports: Full color (LCD/IPS) and e-Ink (B&W dithered) modes
+      Target: Raspberry Pi 4 with common Pi displays
+    -->
+
+    <!-- The main aquarium canvas fills the entire viewport -->
+    <canvas id="aquariumCanvas"></canvas>
+
+    <!-- Optional status overlay (can be hidden for pure aquarium) -->
+    <div id="statusOverlay" class="hidden">
+        <span id="statusText">idle</span>
+    </div>
+
+    <!-- E-ink mode toggle (useful for debugging on desktop) -->
+    <button id="einkToggle" title="Toggle e-Ink mode">⬛</button>
+
+    <!-- Debug info panel (shows current screen profile) -->
+    <div id="debugPanel">
+        <span id="profileName">auto</span> |
+        <span id="fpsCounter">--</span> fps
+    </div>
+
+    <!-- Load scripts in dependency order -->
+    <script src="js/utils.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/environment.js"></script>
+    <script src="js/angelfish.js"></script>
+    <script src="js/aquarium.js"></script>
+</body>
+</html>
