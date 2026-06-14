@@ -1,17 +1,19 @@
-# Hermes Aquarium Agent
+# Hermes Aquarium Dashboard v2
 
-A living, procedural aquarium dashboard for Raspberry Pi 4 that visualizes the Hermes agent's internal state through a hero angelfish. Built for LCD, IPS, and e-Ink displays.
+A living, emotionally intelligent aquarium dashboard for Raspberry Pi 4 that visualizes the Hermes agent's internal state through **generated pixel-art angelfish images** and **procedural bioluminescent overlays**. Built for LCD, IPS, and e-Ink displays.
 
-![Aquarium preview](aquarium-preview.png)
+## What's New in v2
 
-## What it does
+The dashboard has been rebuilt around a **full limbic-hermes integration** with generated image assets:
 
-- **Hero angelfish** animates in real-time with colors, fin motion, and glow that reflect the agent's current affective state
-- **10 agent states** mapped to distinct fish behaviors: idle, active, thinking, success, error, sleeping, alert, learning, connecting, busy
-- **Procedural environment**: dynamic water caustics, swaying plants, personality rocks, rising bubbles
-- **Responsive across Pi screen sizes**: 7" 800×480 LCD, 5"/7.5" e-Ink, 10.1" IPS, HDMI 720p/1080p
-- **E-ink fallback mode**: high-contrast black-and-white with dithering, static frame rendering
-- **Agent state bridge**: reads `localStorage` key `hermes_agent_state` or a JSON state file
+| Feature | v1 | v2 |
+|---------|----|----|
+| Fish rendering | Procedural Canvas 2D | **Pixel-art images + procedural overlays** |
+| Emotional depth | 10 discrete states | **Continuous VAD + 100+ neurochemicals** |
+| Time of day | Static | **Circadian-aware (day/dusk/night/dawn)** |
+| Image variants | None | **4 moods: standard, optimistic, midnight, cinematic** |
+| Backend connection | localStorage only | **HTTP API polling (port 8787)** |
+| Asset count | 0 images | **100 images, 70.73 MB** |
 
 ## Quick start on Raspberry Pi
 
@@ -24,7 +26,6 @@ cd hermes-aquarium-agent
 python3 -m http.server 8080
 
 # Open in browser or set as Pi startup page
-# For kiosk mode:
 chromium-browser --kiosk --app=http://localhost:8080
 ```
 
@@ -32,79 +33,168 @@ chromium-browser --kiosk --app=http://localhost:8080
 
 ```
 index.html
-├── css/aquarium.css      # Pi display breakpoints, e-ink overrides
+├── css/aquarium.css           # Pi display breakpoints, e-ink overrides
 └── js/
-    ├── utils.js            # Math helpers, easing, noise, screen detection
-    ├── state-manager.js    # Agent state machine (10 states)
-    ├── environment.js      # Plants, rocks, bubbles, water background
-    ├── angelfish.js        # Hero fish: state colors, fins, glow, motion
-    └── aquarium.js         # Main orchestrator + animation loop
+    ├── utils.js                 # Math helpers, easing, noise, screen detection
+    ├── state-manager.js         # Agent state machine (10 states)
+    ├── limbic-bridge.js         # ★ NEW: Full limbic integration, API polling
+    ├── image-manager.js         # ★ NEW: Load/cache/select images by mood
+    ├── environment.js           # Plants, rocks, bubbles, water background
+    ├── angelfish.js             # ★ REWRITTEN: Image-based + particle overlays
+    └── aquarium.js              # ★ ENHANCED: Async limbic refresh, transitions
 ```
 
-All graphics are procedural Canvas 2D — no external image sprites required.
+## Generated Image Assets
 
-## Screen profiles
+**100 images across a 3D emotional space:**
 
-Detected automatically via `detectScreenProfile()`:
+| Dimension | Options | Count |
+|-----------|---------|-------|
+| **State** | idle, active, thinking, success, error, sleeping, alert, learning, connecting, busy | 10 |
+| **Aspect** | landscape (16:9), portrait (16:9), square (1:1) | 3 |
+| **Mood** | standard, optimistic (`_opt`), midnight (`_mid`), cinematic (`_cine`) | 3–4 |
 
-| Profile | Resolution | Display type |
-|---------|-----------|--------------|
-| `pi_7_lcd` | 800×480 | 7" Raspberry Pi Touch LCD |
-| `pi_5_ink` | 640×384 | 5" Waveshare e-Ink |
-| `pi_7_5_ink` | 800×480 | 7.5" Waveshare e-Ink |
-| `pi_10_ips` | 1280×800 | 10.1" IPS |
-| `hdmi_720p` | 1280×720 | Standard HDMI |
-| `hdmi_1080p` | 1920×1080 | Full HD HDMI |
+**Naming convention:**
+```
+{state}_{aspect}[_mood].png
+
+idle_landscape.png          # standard, landscape
+success_square_opt.png      # optimistic, square
+error_landscape_cine.png    # cinematic midnight, landscape
+```
+
+### Mood selection logic
+
+The `ImageManager.selectMood()` function uses limbic parameters:
+
+| Condition | Selected Mood | Visual |
+|-----------|---------------|--------|
+| Day + valence > 0.58 | **optimistic** | Warm golden light |
+| Night or melatonin > 0.35 | **midnight** | Deep blue, bioluminescent glow |
+| Deep night + stress > 0.55 | **cinematic** | Dramatic particles, high contrast |
+| Default | **standard** | Natural aquarium lighting |
+
+### Total asset size: **70.73 MB** (100 PNGs)
+
+## Limbic Integration
+
+### Backend: limbic-hermes dashboard server
+
+The dashboard connects to the [`limbic-hermes`](https://github.com/drwjkirkpatrick-web/limbic-hermes) Python module's HTTP API on **port 8787**:
+
+```
+GET  http://localhost:8787/api/state   → Full limbic state JSON
+POST http://localhost:8787/api/state   → Inject events
+```
+
+### What flows through
+
+The bridge reads **100+ neurochemical variables** and computes:
+
+| Limbic Variable | Dashboard Effect |
+|-----------------|--------------------|
+| `vad.valence` | Image mood (standard → optimistic), warm/cool color overlay |
+| `vad.arousal` | Fish movement speed, fin flutter, bubble rate |
+| `vad.dominance` | Posture upright vs drooping |
+| `neurochemistry.cortisol` | Erratic movement, red stress vignette |
+| `neurochemistry.dopamine` | Gracefulness, bioluminescent glow |
+| `neurochemistry.melatonin` | Dimming, midnight image variant |
+| `neurochemistry.orexin` | Wakefulness override |
+| `allostatic_load` | Fatigue grain overlay |
+| `circadian_hour` | Day/night cycle: standard vs midnight images |
+| `drive.rest_need` | Glow dimming, slower animation |
+
+### Overlay system (5 effect layers)
+
+Rendered on top of the image in real-time:
+
+1. **Color temperature** — warm gold tint for positive valence, cool blue for negative
+2. **Dimming** — dark overlay from melatonin / sleep pressure
+3. **Bioluminescent glow** — radial cyan/gold gradient from dopamine × night phase
+4. **Stress vignette** — red/orange corner vignette from cortisol > 0.5
+5. **Fatigue grain** — random pixel noise from allostatic load > 0.5
+
+### Emotional consistency
+
+The bridge maintains a **valence history buffer** (last 10 samples) to smooth transitions:
+- Prevents flickering between optimistic and midnight
+- Computes `emotionalMomentum` for gradual state shifts
+- `phaseTransition` smoothly blends day → dusk → night → dawn
 
 ## Agent state → fish mapping
 
-| State | Fish behavior | Color |
-|-------|--------------|-------|
-| idle | Slow drift, gentle fins | Soft amber |
-| active | Steady swimming, alert posture | Bright gold |
-| thinking | Hovering, fin flutter | Cyan pulse |
-| success | Victory loop, bright glow | Vivid green |
-| error | Rapid dart, drooping fins | Red flash |
-| sleeping | Dimmed, settled near bottom | Deep blue |
-| alert | Upright, scanning | Orange burst |
-| learning | Curious circling | Purple shimmer |
-| connecting | Pulsing rhythm | White pulse |
-| busy | Faster beat, tighter turns | Saturated gold |
+| State | Image mood | Behavior | Color base |
+|-------|-----------|----------|------------|
+| idle | standard/opt | Slow drift, gentle fins | Soft teal |
+| active | standard/opt | Steady swimming | Bright blue |
+| thinking | standard/mid | Hovering, fin flutter | Slate blue |
+| success | opt/cine | Victory loop, sparkle particles | Emerald + gold |
+| error | mid/cine | Rapid dart, glitch particles | Orange + red |
+| sleeping | mid | Dimmed, settled near bottom | Deep grey |
+| alert | mid/cine | Upright, scanning | Cyan burst |
+| learning | mid/cine | Curious circling | Purple shimmer |
+| connecting | standard/opt | Pulsing rhythm | Teal |
+| busy | opt/cine | Faster beat, chaos particles | Amber |
+
+## Screen profiles
+
+Detected automatically via `Utils.detectScreenProfile()` and `ImageManager.detectAspect()`:
+
+| Profile | Resolution | Aspect | Use case |
+|---------|-----------|--------|----------|
+| `pi_7_lcd` | 800×480 | 5:3 | 7" Raspberry Pi Touch LCD |
+| `pi_5_ink` | 640×384 | 5:3 | 5" Waveshare e-Ink |
+| `pi_7_5_ink` | 800×480 | 5:3 | 7.5" Waveshare e-Ink |
+| `pi_10_ips` | 1280×800 | 16:10 | 10.1" IPS |
+| `hdmi_720p` | 1280×720 | 16:9 | Standard HDMI |
+| `hdmi_1080p` | 1920×1080 | 16:9 | Full HD HDMI |
+
+Aspect ratio is detected dynamically — rotates between landscape/portrait/square on resize.
 
 ## E-ink mode
 
 Toggle with the **E-Ink** button or add `?eink=1` to the URL.
 
-- Switches to black-and-white rendering
-- Disables continuous animation (static frame updates on state change)
-- Applies Bayer dithering for smooth tones
-- Uses `image-rendering: pixelated` for crisp edges
+- Falls back to **procedural rendering** (no images loaded)
+- High-contrast black-and-white with dithering
+- Static frame updates on state change
+- `image-rendering: pixelated` for crisp edges
+- All limbic overlays disabled (simplified silhouette)
 
-## Agent state bridge
+## Demo / Testing
 
-The dashboard reads agent state from:
+### Python simulation
 
-1. **`localStorage`** key `hermes_agent_state` (set by the Hermes agent or a bridge script)
-2. **JSON file** via a small HTTP endpoint or file read
-
-Example state payload:
-```json
-{
-  "state": "thinking",
-  "vad": { "valence": 0.2, "arousal": 0.6, "dominance": 0.5 },
-  "timestamp": 1718300000
-}
+```bash
+# From the repo root
+python aquarium_limbic_demo.py
 ```
 
-## Limbic system integration
+Simulates 10 emotional events through the full limbic pipeline and prints:
+- Selected image variant
+- Derived agent state
+- VAD values
+- Overlay parameters
+- Final emotional snapshot
 
-The dashboard pairs with the [`limbic-hermes`](https://github.com/drwjkirkpatrick-web/limbic-hermes) module:
+### Manual state injection
 
-- Limbic VAD state drives fish color temperature, fin speed, posture, and glow
-- `dominant_affect` → fish animation state
-- `drive.rest_need` → glow dimming and slower movement
+```javascript
+// In browser console
+localStorage.setItem('hermes_agent_state', JSON.stringify({
+  state: 'success',
+  timestamp: Date.now(),
+  demo: false
+}));
+```
 
-See `limbic_hermes/limbic_bridge.js` in the limbic repo for the browser-side bridge.
+Or via the limbic-hermes API:
+
+```bash
+curl -X POST http://localhost:8787/api/state \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"task_complete","raw_valence":0.8,"importance":0.7}'
+```
 
 ## Development
 
@@ -113,16 +203,18 @@ See `limbic_hermes/limbic_bridge.js` in the limbic repo for the browser-side bri
 python3 -m http.server 8888
 
 # Open http://localhost:8888
-# Add ?debug=1 for FPS counter and state overlay
+# The debug panel shows: FPS | screen profile | current image filename | limbic status
 ```
 
-## Image generation prompts
+### Key modules
 
-The 31-step prompt list for generating aquarium assets is saved in `PROMPTS.md`. These are designed for Midjourney, DALL-E, or Flux and cover:
-
-- Phase 1: Foundation (water, light, plants, rocks)
-- Phase 2: Character (angelfish hero in 7 states)
-- Phase 3: Polish (bubbles, particles, UI chrome)
+| File | Responsibility |
+|------|--------------|
+| `js/image-manager.js` | LRU image cache, mood selection, crossfade transitions, aspect detection |
+| `js/limbic-bridge.js` | API polling, circadian phase tracking, overlay parameter computation, emotional smoothing |
+| `js/angelfish.js` | Image assignment, sparkle particles, bubble emission, glow effects |
+| `js/aquarium.js` | Orchestration: async limbic refresh, image transitions, render loop |
+| `aquarium_limbic_demo.py` | Python test harness for the full pipeline |
 
 ## License
 
