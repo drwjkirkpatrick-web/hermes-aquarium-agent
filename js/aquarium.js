@@ -1,8 +1,8 @@
 /**
- * aquarium.js — Main Orchestrator
+ * aquarium.js — Main Orchestrator (Image + Limbic Integrated)
  *
- * Initializes the canvas, creates the world (plants, rocks, bubbles, particles),
- * spawns the hero angelfish, and runs the animation loop.
+ * Initializes the canvas, creates the world, spawns the hero angelfish,
+ * manages image assets via ImageManager, and polls limbic state.
  * Handles resize events, e-ink toggle, and debug display.
  */
 
@@ -18,18 +18,27 @@
     const profileName = document.getElementById('profileName');
     const fpsCounter = document.getElementById('fpsCounter');
     const einkToggle = document.getElementById('einkToggle');
+    const limbicIndicator = document.getElementById('limbicIndicator');
 
     // ─── State manager ───
     const stateManager = new StateManager();
 
-    // ─── Limbic bridge ───
-    const limbicBridge = new LimbicBridge();
-    let limbicParams = {};
-    const limbicIndicator = document.getElementById('limbicIndicator');
+    // ─── Limbic bridge (enhanced v2) ───
+    const limbicBridge = new LimbicBridge({ useApi: true });
+    let limbicResult = { fishParams: {}, imageParams: {} };
+    let limbicConnected = false;
+
+    // ─── Image Manager ───
+    const imageManager = new ImageManager({
+        basePath: 'assets/images',
+        transitionSpeed: 0.03,
+        maxCacheSize: 10,
+    });
 
     // ─── Screen profile ───
     let profile = Utils.detectScreenProfile();
     let isEink = profile.eink || document.body.classList.contains('e-ink');
+    let currentAspect = 'landscape';
 
     // ─── World objects ───
     let waterBg, plants = [], rocks = [], bubbles = [], particles = [];
@@ -44,6 +53,7 @@
 
         profile = Utils.detectScreenProfile();
         isEink = profile.eink || document.body.classList.contains('e-ink');
+        currentAspect = ImageManager.detectAspect();
 
         // Rebuild world objects for new size
         buildWorld();
@@ -139,9 +149,7 @@
         if (!heroFish) {
             heroFish = new Angelfish(w * 0.5, h * 0.45, s);
         } else {
-            // Keep fish but adjust scale
             heroFish.scale = s;
-            // Gently pull toward center
             heroFish.x = Utils.lerp(heroFish.x, w * 0.5, 0.1);
             heroFish.y = Utils.lerp(heroFish.y, h * 0.45, 0.1);
         }
@@ -153,6 +161,55 @@
         isEink = document.body.classList.contains('e-ink');
     });
 
+    // ─── Async limbic refresh ───
+    async function refreshLimbic() {
+        try {
+            const result = await limbicBridge.refresh();
+            limbicResult = result;
+            limbicConnected = true;
+
+            const imgParams = result.imageParams || {};
+            const fishParams = result.fishParams || {};
+            const derivedState = fishParams.derivedState || stateManager.getState();
+
+            // Update status overlay with emotional context
+            if (statusText) {
+                const affect = (result.fishParams?.rawLimbic?.dominant_affect || '');
+                const mood = imgParams.mood || 'standard';
+                statusText.textContent = `${derivedState}${affect ? ' · ' + affect : ''}`;
+            }
+
+            // Update limbic indicator
+            if (limbicIndicator) {
+                const v = (fishParams.valence || 0.5);
+                const a = (fishParams.arousal || 0);
+                const isNight = imgParams.isNight || false;
+                limbicIndicator.textContent = ` | ${isNight ? '🌙' : '☀️'} V${(v*2-1).toFixed(2)} A${a.toFixed(2)} [${imgParams.mood || 'std'}]`;
+            }
+
+            // Set fish image from ImageManager
+            if (!isEink) {
+                const entry = imageManager.selectEntry(
+                    derivedState,
+                    currentAspect,
+                    imgParams.overlays || {}
+                );
+                if (entry && entry.image) {
+                    heroFish.setImage(entry.image);
+                }
+
+                // Trigger image transition if needed
+                imageManager.update(derivedState, currentAspect, imgParams.overlays || {});
+            }
+
+            return result;
+        } catch (e) {
+            console.warn('Aquarium: limbic refresh failed:', e);
+            limbicConnected = false;
+            return null;
+        }
+    }
+
     // ─── Main update ───
     function update(dt, time) {
         const w = window.innerWidth;
@@ -161,30 +218,34 @@
         // Update state manager
         stateManager.update(dt, time);
 
-        // Refresh limbic bridge every ~2 seconds (or when state changes)
+        // Refresh limbic bridge every ~2 seconds
         if (Math.floor(time * 10) % 20 === 0) {
-            limbicParams = limbicBridge.refresh();
-            if (limbicIndicator) {
-                const affect = limbicParams.rawLimbic?.dominant_affect || '—';
-                limbicIndicator.textContent = ` | limbic: ${affect} (V${(limbicParams.valence*2-1).toFixed(2)} A${limbicParams.arousal.toFixed(2)})`;
+            refreshLimbic();
+        }
+
+        // Re-detect aspect ratio
+        const detected = ImageManager.detectAspect();
+        if (detected !== currentAspect) {
+            currentAspect = detected;
+            if (!isEink) {
+                const imgParams = limbicResult.imageParams || {};
+                imageManager.update(
+                    stateManager.getState(),
+                    currentAspect,
+                    imgParams.overlays || {}
+                );
             }
         }
 
         // Update environment
         plants.forEach(p => p.update(dt, time));
-        rocks.forEach(r => { /* rocks are static */ });
+        rocks.forEach(r => { /* static */ });
         bubbles.forEach(b => b.update(dt, time));
         particles.forEach(p => p.update(dt, w, h));
 
-        // Update hero fish (pass limbic params for nuanced behavior)
-        heroFish.update(dt, time, stateManager, { w, h }, limbicParams);
-
-        // Update status overlay text
-        const state = stateManager.getState();
-        if (statusText) {
-            statusText.textContent = state;
-            statusOverlay.classList.remove('hidden');
-        }
+        // Update hero fish with limbic params
+        const fishParams = limbicResult.fishParams || {};
+        heroFish.update(dt, time, stateManager, { w, h }, fishParams);
     }
 
     // ─── Main render ───
@@ -195,39 +256,84 @@
         // Clear
         ctx.clearRect(0, 0, w, h);
 
-        // 1. Water background
-        waterBg.draw(ctx, w, h, time, isEink);
+        if (isEink) {
+            // E-ink: procedural rendering only
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, w, h);
+
+            // Dithered water
+            ctx.fillStyle = '#000';
+            for (let y = 0; y < h; y += 4) {
+                for (let x = 0; x < w; x += 4) {
+                    if ((x + y) % 8 === 0 || (x - y) % 8 === 0) {
+                        ctx.fillRect(x, y, 2, 2);
+                    }
+                }
+            }
+
+            // Sand
+            const sandY = h - h * 0.08;
+            ctx.fillRect(0, sandY, w, h - sandY);
+
+            // Simplified fish
+            heroFish.draw(ctx, time, true);
+            return;
+        }
+
+        // ─── FULL COLOR MODE: Image-first rendering ───
+
+        // 1. Draw background image (if available) or procedural water
+        const imgParams = limbicResult.imageParams || {};
+        const overlays = imgParams.overlays || {};
+
+        // Check if there's a background image to use
+        // For now, draw procedural water first, then image on top
+        waterBg.draw(ctx, w, h, time, false);
 
         // 2. Sand floor
-        Environment.drawSand(ctx, w, h, isEink);
+        Environment.drawSand(ctx, w, h, false);
 
         // 3. Background plants
-        plants.filter(p => !p.isForeground).forEach(p => p.draw(ctx, time, isEink));
+        plants.filter(p => !p.isForeground).forEach(p => p.draw(ctx, time, false));
 
         // 4. Rocks
-        rocks.forEach(r => r.draw(ctx, isEink));
+        rocks.forEach(r => r.draw(ctx, false));
 
         // 5. Ambient particles
-        particles.forEach(p => p.draw(ctx, isEink));
+        particles.forEach(p => p.draw(ctx, false));
 
-        // 6. Ambient bubbles (behind fish)
-        bubbles.forEach(b => b.draw(ctx, isEink));
+        // 6. Ambient bubbles
+        bubbles.forEach(b => b.draw(ctx, false));
 
-        // 7. HERO FISH
-        heroFish.draw(ctx, time, isEink);
+        // 7. Draw image manager transition (hero fish background)
+        // The image manager draws the fish image
+        imageManager.draw(ctx, w, h);
 
-        // 8. Foreground plants (in front of fish)
-        plants.filter(p => p.isForeground).forEach(p => p.draw(ctx, time, isEink));
+        // 8. Limbic overlay effects (temperature, dimming, glow)
+        imageManager.drawOverlays(ctx, w, h, overlays);
 
-        // Debug: FPS
+        // 9. HERO FISH — procedural overlays on top of image
+        // The fish draws sparkle particles, bubbles, etc.
+        heroFish.draw(ctx, time, false);
+
+        // 10. Foreground plants
+        plants.filter(p => p.isForeground).forEach(p => p.draw(ctx, time, false));
+
+        // 11. Debug overlay
         if (debugPanel && fpsCounter) {
-            // Handled by loop wrapper
+            // FPS updated by loop
         }
     }
 
     // ─── Start everything ───
-    function init() {
+    async function init() {
         resize();
+
+        // Preload images for the initial state
+        imageManager.preload(stateManager.getState(), currentAspect);
+
+        // Do an initial limbic refresh
+        await refreshLimbic();
 
         const loop = Utils.createLoop(update, render);
         loop.start();
@@ -235,6 +341,16 @@
         // Periodic FPS update
         setInterval(() => {
             if (fpsCounter) fpsCounter.textContent = loop.getFps();
+
+            // Update debug with image info
+            if (debugPanel) {
+                const imgInfo = imageManager.getCurrentInfo();
+                if (imgInfo.filename !== 'none') {
+                    // Append image info to existing text
+                    const base = profileName.textContent.split(' | ')[0];
+                    profileName.textContent = `${base} | img: ${imgInfo.filename}`;
+                }
+            }
         }, 1000);
     }
 

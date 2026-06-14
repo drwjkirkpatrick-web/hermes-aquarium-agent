@@ -10,18 +10,24 @@
 </head>
 <body>
     <!--
-      Hermes Aquarium Dashboard
+      Hermes Aquarium Dashboard — V2: Full Limbic Integration
       A living canvas that reflects the agent's internal state through
-      the behavior of a hero angelfish.
+      generated pixel-art angelfish images and procedural overlays.
 
       Supports: Full color (LCD/IPS) and e-Ink (B&W dithered) modes
       Target: Raspberry Pi 4 with common Pi displays
+
+      Limbic-Hermes Integration:
+      - Connects to limbic-hermes dashboard server (port 8787)
+      - Reads 100+ neurochemical variables in real-time
+      - Selects image variant: standard / optimistic / midnight / cinematic
+      - Applies mood-aware overlays: temperature, dimming, glow, vignette
     -->
 
     <!-- The main aquarium canvas fills the entire viewport -->
     <canvas id="aquariumCanvas"></canvas>
 
-    <!-- Optional status overlay (can be hidden for pure aquarium) -->
+    <!-- Optional status overlay (shows state + affect + mood variant) -->
     <div id="statusOverlay" class="hidden">
         <span id="statusText">idle</span>
     </div>
@@ -29,7 +35,7 @@
     <!-- E-ink mode toggle (useful for debugging on desktop) -->
     <button id="einkToggle" title="Toggle e-Ink mode">⬛</button>
 
-    <!-- Debug info panel (shows current screen profile) -->
+    <!-- Debug info panel (shows screen profile + FPS + limbic + image info) -->
     <div id="debugPanel">
         <span id="profileName">auto</span> |
         <span id="fpsCounter">--</span> fps
@@ -40,6 +46,7 @@
     <script src="js/utils.js"></script>
     <script src="js/state-manager.js"></script>
     <script src="js/limbic-bridge.js"></script>
+    <script src="js/image-manager.js"></script>
     <script src="js/environment.js"></script>
     <script src="js/angelfish.js"></script>
     <script src="js/aquarium.js"></script>

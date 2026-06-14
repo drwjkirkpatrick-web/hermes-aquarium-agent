@@ -105,14 +105,18 @@ body.e-ink #einkToggle {
     position: fixed;
     bottom: 8px;
     left: 8px;
-    padding: 3px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
-    background: rgba(0,0,0,0.25);
-    color: rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.35);
+    color: rgba(255,255,255,0.7);
     font-size: 10px;
     font-family: monospace;
     pointer-events: none;
     z-index: 10;
+    max-width: 90vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 body.e-ink #debugPanel {
