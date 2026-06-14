@@ -1,0 +1,802 @@
+{
+  "active_landscape.png": {
+    "sharpness": 42.0179,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 357.807,
+    "quality_score": 0.803087
+  },
+  "active_landscape_mid.png": {
+    "sharpness": 9.6724,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 323.149,
+    "quality_score": 0.64675
+  },
+  "active_landscape_opt.png": {
+    "sharpness": 23.7939,
+    "hue_distance": 158.9588,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 533.45,
+    "quality_score": 0.493918
+  },
+  "active_portrait.png": {
+    "sharpness": 40.087,
+    "hue_distance": 5.4144,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 461.389,
+    "quality_score": 0.786223
+  },
+  "active_portrait_mid.png": {
+    "sharpness": 16.1177,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 412.914,
+    "quality_score": 0.677902
+  },
+  "active_portrait_opt.png": {
+    "sharpness": 28.9101,
+    "hue_distance": 158.5791,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 477.767,
+    "quality_score": 0.519175
+  },
+  "active_square.png": {
+    "sharpness": 25.3881,
+    "hue_distance": 1.9236,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1005.02,
+    "quality_score": 0.720034
+  },
+  "active_square_mid.png": {
+    "sharpness": 14.1238,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1199.649,
+    "quality_score": 0.668265
+  },
+  "active_square_opt.png": {
+    "sharpness": 24.9593,
+    "hue_distance": 159.5999,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1040.791,
+    "quality_score": 0.498659
+  },
+  "alert_landscape.png": {
+    "sharpness": 57.7554,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 663.991,
+    "quality_score": 0.879151
+  },
+  "alert_landscape_cine.png": {
+    "sharpness": 43.2319,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 932.646,
+    "quality_score": 0.808955
+  },
+  "alert_landscape_mid.png": {
+    "sharpness": 30.3895,
+    "hue_distance": 15.7388,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 372.604,
+    "quality_score": 0.724993
+  },
+  "alert_landscape_opt.png": {
+    "sharpness": 30.988,
+    "hue_distance": 162.73,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 580.909,
+    "quality_score": 0.523445
+  },
+  "alert_portrait.png": {
+    "sharpness": 48.5894,
+    "hue_distance": 8.097,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 580.762,
+    "quality_score": 0.823588
+  },
+  "alert_portrait_mid.png": {
+    "sharpness": 19.5002,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 496.008,
+    "quality_score": 0.694251
+  },
+  "alert_portrait_opt.png": {
+    "sharpness": 31.2424,
+    "hue_distance": 153.0443,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 589.797,
+    "quality_score": 0.538145
+  },
+  "alert_square.png": {
+    "sharpness": 28.5278,
+    "hue_distance": 4.1291,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 925.185,
+    "quality_score": 0.732141
+  },
+  "alert_square_mid.png": {
+    "sharpness": 21.6168,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 761.066,
+    "quality_score": 0.704481
+  },
+  "alert_square_opt.png": {
+    "sharpness": 25.7714,
+    "hue_distance": 161.8194,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 938.618,
+    "quality_score": 0.499497
+  },
+  "busy_landscape.png": {
+    "sharpness": 74.6465,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 748.422,
+    "quality_score": 0.960792
+  },
+  "busy_landscape_mid.png": {
+    "sharpness": 72.621,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 748.946,
+    "quality_score": 0.951002
+  },
+  "busy_landscape_opt.png": {
+    "sharpness": 35.5461,
+    "hue_distance": 126.7097,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 605.597,
+    "quality_score": 0.595574
+  },
+  "busy_portrait.png": {
+    "sharpness": 51.7204,
+    "hue_distance": 2.6237,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 629.625,
+    "quality_score": 0.846333
+  },
+  "busy_portrait_mid.png": {
+    "sharpness": 34.8124,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 437.848,
+    "quality_score": 0.76826
+  },
+  "busy_portrait_opt.png": {
+    "sharpness": 29.001,
+    "hue_distance": 147.9952,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 581.13,
+    "quality_score": 0.534334
+  },
+  "busy_square.png": {
+    "sharpness": 68.6909,
+    "hue_distance": 4.3489,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1383.67,
+    "quality_score": 0.925958
+  },
+  "busy_square_cine.png": {
+    "sharpness": 41.7341,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1345.265,
+    "quality_score": 0.801715
+  },
+  "busy_square_mid.png": {
+    "sharpness": 38.14,
+    "hue_distance": 0.7104,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1248.265,
+    "quality_score": 0.783355
+  },
+  "busy_square_opt.png": {
+    "sharpness": 21.3978,
+    "hue_distance": 156.2362,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1015.302,
+    "quality_score": 0.486124
+  },
+  "connecting_landscape.png": {
+    "sharpness": 28.4255,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 505.706,
+    "quality_score": 0.73739
+  },
+  "connecting_landscape_mid.png": {
+    "sharpness": 7.1787,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 356.77,
+    "quality_score": 0.634697
+  },
+  "connecting_landscape_opt.png": {
+    "sharpness": 27.263,
+    "hue_distance": 159.8832,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 538.051,
+    "quality_score": 0.5094
+  },
+  "connecting_portrait.png": {
+    "sharpness": 30.9492,
+    "hue_distance": 0.9934,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 514.464,
+    "quality_score": 0.748206
+  },
+  "connecting_portrait_mid.png": {
+    "sharpness": 11.3964,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 444.815,
+    "quality_score": 0.655083
+  },
+  "connecting_portrait_opt.png": {
+    "sharpness": 26.3947,
+    "hue_distance": 147.041,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 568.603,
+    "quality_score": 0.523064
+  },
+  "connecting_square.png": {
+    "sharpness": 25.6002,
+    "hue_distance": 5.7505,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1075.56,
+    "quality_score": 0.715737
+  },
+  "connecting_square_mid.png": {
+    "sharpness": 13.0706,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1021.57,
+    "quality_score": 0.663175
+  },
+  "connecting_square_opt.png": {
+    "sharpness": 19.8926,
+    "hue_distance": 133.6814,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1085.77,
+    "quality_score": 0.510218
+  },
+  "error_landscape.png": {
+    "sharpness": 33.6494,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 921.528,
+    "quality_score": 0.762639
+  },
+  "error_landscape_cine.png": {
+    "sharpness": 22.7391,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 880.833,
+    "quality_score": 0.709906
+  },
+  "error_landscape_mid.png": {
+    "sharpness": 8.8217,
+    "hue_distance": 0.9566,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 432.524,
+    "quality_score": 0.641308
+  },
+  "error_landscape_opt.png": {
+    "sharpness": 18.0639,
+    "hue_distance": 144.5294,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 537.068,
+    "quality_score": 0.486292
+  },
+  "error_portrait.png": {
+    "sharpness": 26.84,
+    "hue_distance": 47.3258,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 462.667,
+    "quality_score": 0.663904
+  },
+  "error_portrait_mid.png": {
+    "sharpness": 9.4282,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 369.674,
+    "quality_score": 0.64557
+  },
+  "error_portrait_opt.png": {
+    "sharpness": 31.3825,
+    "hue_distance": 134.0607,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 480.271,
+    "quality_score": 0.565226
+  },
+  "error_square.png": {
+    "sharpness": 16.3722,
+    "hue_distance": 25.1501,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 888.38,
+    "quality_score": 0.644153
+  },
+  "error_square_cine.png": {
+    "sharpness": 17.3037,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1463.054,
+    "quality_score": 0.683635
+  },
+  "error_square_mid.png": {
+    "sharpness": 6.6647,
+    "hue_distance": 3.8205,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 980.366,
+    "quality_score": 0.626899
+  },
+  "error_square_opt.png": {
+    "sharpness": 23.1109,
+    "hue_distance": 128.435,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1227.092,
+    "quality_score": 0.53307
+  },
+  "idle_landscape.png": {
+    "sharpness": 24.1263,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 486.321,
+    "quality_score": 0.716611
+  },
+  "idle_landscape_cine.png": {
+    "sharpness": 31.0429,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 724.766,
+    "quality_score": 0.750041
+  },
+  "idle_landscape_mid.png": {
+    "sharpness": 8.3399,
+    "hue_distance": 11.8204,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 396.419,
+    "quality_score": 0.623869
+  },
+  "idle_landscape_opt.png": {
+    "sharpness": 27.1158,
+    "hue_distance": 139.9499,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 612.476,
+    "quality_score": 0.536412
+  },
+  "idle_portrait.png": {
+    "sharpness": 21.8709,
+    "hue_distance": 3.4533,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 450.471,
+    "quality_score": 0.700906
+  },
+  "idle_portrait_mid.png": {
+    "sharpness": 10.416,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 444.558,
+    "quality_score": 0.650344
+  },
+  "idle_portrait_opt.png": {
+    "sharpness": 30.2855,
+    "hue_distance": 158.223,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 531.66,
+    "quality_score": 0.526317
+  },
+  "idle_square.png": {
+    "sharpness": 12.3857,
+    "hue_distance": 2.1708,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 765.619,
+    "quality_score": 0.656845
+  },
+  "idle_square_cine.png": {
+    "sharpness": 21.0002,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1209.484,
+    "quality_score": 0.701501
+  },
+  "idle_square_mid.png": {
+    "sharpness": 6.923,
+    "hue_distance": 3.1655,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 971.687,
+    "quality_score": 0.629059
+  },
+  "idle_square_opt.png": {
+    "sharpness": 15.7705,
+    "hue_distance": 117.1065,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 964.422,
+    "quality_score": 0.513348
+  },
+  "learning_landscape.png": {
+    "sharpness": 28.3023,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 640.682,
+    "quality_score": 0.736794
+  },
+  "learning_landscape_cine.png": {
+    "sharpness": 36.9273,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 642.534,
+    "quality_score": 0.778482
+  },
+  "learning_landscape_mid.png": {
+    "sharpness": 8.9556,
+    "hue_distance": 11.8497,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 558.155,
+    "quality_score": 0.626804
+  },
+  "learning_landscape_opt.png": {
+    "sharpness": 17.4378,
+    "hue_distance": 133.0746,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 654.362,
+    "quality_score": 0.499198
+  },
+  "learning_portrait.png": {
+    "sharpness": 32.1613,
+    "hue_distance": 5.1408,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 637.933,
+    "quality_score": 0.748297
+  },
+  "learning_portrait_mid.png": {
+    "sharpness": 10.3207,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 371.158,
+    "quality_score": 0.649883
+  },
+  "learning_portrait_opt.png": {
+    "sharpness": 24.213,
+    "hue_distance": 90.3953,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 702.604,
+    "quality_score": 0.591304
+  },
+  "learning_square.png": {
+    "sharpness": 23.589,
+    "hue_distance": 5.2294,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1139.611,
+    "quality_score": 0.70674
+  },
+  "learning_square_cine.png": {
+    "sharpness": 35.6626,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1313.15,
+    "quality_score": 0.772369
+  },
+  "learning_square_mid.png": {
+    "sharpness": 10.4802,
+    "hue_distance": 20.013,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1138.166,
+    "quality_score": 0.62282
+  },
+  "learning_square_opt.png": {
+    "sharpness": 30.9061,
+    "hue_distance": 123.6313,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1181.96,
+    "quality_score": 0.577429
+  },
+  "sleeping_landscape.png": {
+    "sharpness": 1.1369,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 343.517,
+    "quality_score": 0.605495
+  },
+  "sleeping_landscape_mid.png": {
+    "sharpness": 6.8522,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 612.723,
+    "quality_score": 0.633119
+  },
+  "sleeping_landscape_opt.png": {
+    "sharpness": 0.0,
+    "hue_distance": 143.0095,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 1.753,
+    "quality_score": 0.251097
+  },
+  "sleeping_portrait.png": {
+    "sharpness": 1.1654,
+    "hue_distance": 5.0518,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 268.53,
+    "quality_score": 0.598606
+  },
+  "sleeping_portrait_mid.png": {
+    "sharpness": 2.8653,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 346.193,
+    "quality_score": 0.613849
+  },
+  "sleeping_portrait_opt.png": {
+    "sharpness": 8.3472,
+    "hue_distance": 169.2855,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 480.501,
+    "quality_score": 0.404896
+  },
+  "sleeping_square.png": {
+    "sharpness": 2.9804,
+    "hue_distance": 7.415,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 870.136,
+    "quality_score": 0.604092
+  },
+  "sleeping_square_mid.png": {
+    "sharpness": 5.9161,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1070.692,
+    "quality_score": 0.628595
+  },
+  "sleeping_square_opt.png": {
+    "sharpness": 11.7855,
+    "hue_distance": 179.7478,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 967.559,
+    "quality_score": 0.406964
+  },
+  "success_landscape.png": {
+    "sharpness": 46.874,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 658.993,
+    "quality_score": 0.826558
+  },
+  "success_landscape_cine.png": {
+    "sharpness": 82.7585,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 799.518,
+    "quality_score": 1.0
+  },
+  "success_landscape_mid.png": {
+    "sharpness": 22.2907,
+    "hue_distance": 1.1741,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 545.832,
+    "quality_score": 0.706105
+  },
+  "success_landscape_opt.png": {
+    "sharpness": 31.0477,
+    "hue_distance": 139.7202,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 777.896,
+    "quality_score": 0.555736
+  },
+  "success_portrait.png": {
+    "sharpness": 24.2631,
+    "hue_distance": 4.9118,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 568.25,
+    "quality_score": 0.71044
+  },
+  "success_portrait_mid.png": {
+    "sharpness": 20.2686,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 429.292,
+    "quality_score": 0.697965
+  },
+  "success_portrait_opt.png": {
+    "sharpness": 36.7738,
+    "hue_distance": 156.2937,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 536.428,
+    "quality_score": 0.560361
+  },
+  "success_square.png": {
+    "sharpness": 26.6973,
+    "hue_distance": 1.4055,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1018.687,
+    "quality_score": 0.727082
+  },
+  "success_square_cine.png": {
+    "sharpness": 66.8561,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1494.002,
+    "quality_score": 0.923138
+  },
+  "success_square_mid.png": {
+    "sharpness": 15.51,
+    "hue_distance": 5.7733,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1075.312,
+    "quality_score": 0.666935
+  },
+  "success_square_opt.png": {
+    "sharpness": 32.2609,
+    "hue_distance": 145.4283,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1144.502,
+    "quality_score": 0.553661
+  },
+  "thinking_landscape.png": {
+    "sharpness": 5.187,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 362.364,
+    "quality_score": 0.625071
+  },
+  "thinking_landscape_mid.png": {
+    "sharpness": 12.2471,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 384.871,
+    "quality_score": 0.659195
+  },
+  "thinking_landscape_opt.png": {
+    "sharpness": 35.6351,
+    "hue_distance": 157.8797,
+    "width": 1024,
+    "height": 576,
+    "size_kb": 644.285,
+    "quality_score": 0.552651
+  },
+  "thinking_portrait.png": {
+    "sharpness": 2.8813,
+    "hue_distance": 3.4599,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 282.12,
+    "quality_score": 0.609114
+  },
+  "thinking_portrait_mid.png": {
+    "sharpness": 14.6366,
+    "hue_distance": 0.0,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 331.387,
+    "quality_score": 0.670744
+  },
+  "thinking_portrait_opt.png": {
+    "sharpness": 24.0071,
+    "hue_distance": 146.5321,
+    "width": 576,
+    "height": 1024,
+    "size_kb": 565.488,
+    "quality_score": 0.512232
+  },
+  "thinking_square.png": {
+    "sharpness": 7.6439,
+    "hue_distance": 0.1819,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 999.897,
+    "quality_score": 0.636693
+  },
+  "thinking_square_mid.png": {
+    "sharpness": 9.5295,
+    "hue_distance": 0.0,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1086.031,
+    "quality_score": 0.646059
+  },
+  "thinking_square_opt.png": {
+    "sharpness": 21.369,
+    "hue_distance": 135.7463,
+    "width": 1024,
+    "height": 1024,
+    "size_kb": 1068.559,
+    "quality_score": 0.514483
+  }
+}

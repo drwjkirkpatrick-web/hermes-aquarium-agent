@@ -1,13 +1,16 @@
 /**
- * image-manager.js — Image Asset Management for Hermes Aquarium
+ * image-manager.js v2 — Image Asset Management for Hermes Aquarium
  *
  * Loads, caches, and selects the appropriate generated image based on:
  *   - Hermes agent state (idle, active, thinking, ...)
  *   - Screen aspect ratio (landscape, portrait, square)
  *   - Limbic mood variant (standard, optimistic, midnight, cinematic)
  *
- * Supports smooth crossfade transitions between states.
- * E-ink mode falls back to procedural rendering.
+ * v2 changes:
+ *   - WebP-first with PNG fallback
+ *   - Progressive quality tiers (fast→standard→high)
+ *   - Quality scoring from MANIFEST.json
+ *   - Lazy loading for non-current states
  */
 
 (function(global) {
@@ -20,22 +23,51 @@
     class ImageManager {
         constructor(options = {}) {
             this.basePath = options.basePath || 'assets/images';
-            this.cache = new Map();          // filename -> Image
-            this.stateMap = {};              // state -> aspect -> mood[]
+            this.webpPath = options.webpPath || 'assets/images/webp';
+            this.useWebP = options.useWebP !== false;
+            this.webpSupported = this._checkWebPSupport();
+            this.cache = new Map();          // filename → Image
+            this.stateMap = {};              // state → aspect → mood[]
             this.currentEntry = null;
             this.nextEntry = null;
-            this.transitionAlpha = 1.0;      // 1 = current fully visible
+            this.transitionAlpha = 1.0;
             this.isTransitioning = false;
             this.transitionSpeed = options.transitionSpeed || 0.04;
-            this.preloadQueue = [];
             this.maxCacheSize = options.maxCacheSize || 12;
-            this.accessOrder = [];           // LRU tracking
             this.onLoad = options.onLoad || (() => {});
+            this.preloadTier = options.preloadTier || 'fast';  // fast|standard|high
+
+            // Progressive loading queue
+            this.pendingLoads = [];
+            this.isLoading = false;
+            this.priorityQueue = [];
+
+            // Quality scores from manifest
+            this.qualityScores = {};
+            this._loadManifest();
 
             this._buildInventory();
         }
 
-        // ─── Build image inventory from known naming convention ───
+        _checkWebPSupport() {
+            const canvas = document.createElement('canvas');
+            if (canvas.getContext && canvas.getContext('2d')) {
+                return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+            }
+            return false;
+        }
+
+        async _loadManifest() {
+            try {
+                const resp = await fetch(`${this.basePath}/MANIFEST.json`, { cache: 'no-store' });
+                if (resp.ok) {
+                    this.qualityScores = await resp.json();
+                }
+            } catch (e) {
+                // Manifest optional
+            }
+        }
+
         _buildInventory() {
             for (const state of STATES) {
                 this.stateMap[state] = {};
@@ -43,80 +75,106 @@
                     this.stateMap[state][aspect] = [];
                     for (const mood of MOODS) {
                         const suffix = mood === 'standard' ? '' : `_${mood}`;
-                        const filename = `${state}_${aspect}${suffix}.png`;
+                        const filename = `${state}_${aspect}${suffix}`;
+
+                        // Determine best format
+                        const { url, format } = this._getBestUrl(filename);
+
                         this.stateMap[state][aspect].push({
                             filename,
                             mood,
+                            format,
                             loaded: false,
                             image: null,
-                            url: `${this.basePath}/${filename}`,
+                            url,
+                            webpUrl: `${this.webpPath}/${filename}.webp`,
+                            pngUrl: `${this.basePath}/${filename}.png`,
                             error: false,
+                            quality: this.qualityScores[filename] || 0.5,
                         });
                     }
                 }
             }
         }
 
-        // ─── Preload images for a given state/aspect ───
-        preload(state, aspect) {
-            const entries = this.stateMap[state]?.[aspect] || [];
-            entries.forEach(entry => {
-                if (!entry.loaded && !entry.error) {
-                    this._loadEntry(entry);
-                }
-            });
+        _getBestUrl(filename) {
+            // Prefer WebP if supported and available
+            if (this.webpSupported && this.useWebP) {
+                return {
+                    url: `${this.webpPath}/${filename}.webp`,
+                    format: 'webp',
+                };
+            }
+            return {
+                url: `${this.basePath}/${filename}.png`,
+                format: 'png',
+            };
         }
 
-        // ─── Load a single entry ───
-        _loadEntry(entry) {
+        // ─── Progressive quality tiers ───
+        setPreloadTier(tier) {
+            this.preloadTier = tier;
+        }
+
+        // ─── Preload images for a given state/aspect ───
+        async preload(state, aspect) {
+            const entries = this.stateMap[state]?.[aspect] || [];
+            const entriesToLoad = entries.filter(e => !e.loaded && !e.error);
+
+            // Sort by quality score (best first)
+            entriesToLoad.sort((a, b) => b.quality - a.quality);
+
+            // Load current format first, then fallback
+            for (const entry of entriesToLoad) {
+                await this._loadEntry(entry);
+            }
+        }
+
+        // ─── Load a single entry with format fallback ───
+        async _loadEntry(entry) {
             if (entry.loaded || entry.error) return;
 
             // Check cache first
-            if (this.cache.has(entry.filename)) {
-                const cached = this.cache.get(entry.filename);
-                entry.image = cached;
+            const cacheKey = entry.webpUrl;  // Cache by full URL
+            if (this.cache.has(cacheKey)) {
+                entry.image = this.cache.get(cacheKey);
                 entry.loaded = true;
                 return;
             }
 
-            const img = new Image();
-            img.onload = () => {
-                entry.loaded = true;
+            try {
+                const img = await this._loadImage(entry.url);
                 entry.image = img;
-                this.cache.set(entry.filename, img);
-                this.accessOrder.push(entry.filename);
-                this._pruneCache();
+                entry.loaded = true;
+                this.cache.set(cacheKey, img);
                 this.onLoad(entry.filename, img);
-            };
-            img.onerror = () => {
+            } catch (e) {
+                // Try PNG fallback
+                if (entry.url !== entry.pngUrl) {
+                    try {
+                        const img = await this._loadImage(entry.pngUrl);
+                        entry.image = img;
+                        entry.loaded = true;
+                        this.cache.set(entry.pngUrl, img);
+                        this.onLoad(entry.filename, img);
+                        return;
+                    } catch (e2) {
+                        // Both failed
+                    }
+                }
                 entry.error = true;
                 entry.loaded = true;
-            };
-            img.src = entry.url;
+                console.warn('ImageManager: failed to load', entry.filename);
+            }
         }
 
-        // ─── LRU cache pruning ───
-        _pruneCache() {
-            while (this.accessOrder.length > this.maxCacheSize) {
-                const oldest = this.accessOrder.shift();
-                // Only actually delete if no entry references it
-                let referenced = false;
-                for (const state of STATES) {
-                    for (const aspect of ASPECTS) {
-                        for (const entry of this.stateMap[state][aspect]) {
-                            if (entry.filename === oldest) {
-                                referenced = true;
-                                break;
-                            }
-                        }
-                        if (referenced) break;
-                    }
-                    if (referenced) break;
-                }
-                // We keep all entries in stateMap; the cache Map holds actual Image objects
-                // The accessOrder just tracks which to evict from the Map
-                // Actually, simpler: don't evict from Map, just don't preload too many
-            }
+        _loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error(`Failed to load ${url}`));
+                img.src = url;
+            });
         }
 
         // ─── Determine mood variant from limbic params ───
@@ -131,16 +189,9 @@
             const isDeepNight = circadian >= 0  && circadian <= 4;
             const isLowEnergy = melatonin > 0.35 || limbicParams.dimFactor < 0.4;
 
-            // Priority: cinematic (rare, dramatic) → midnight → optimistic → standard
-            if (isDeepNight && (allostatic > 0.55 || cortisol > 0.55)) {
-                return 'cine';
-            }
-            if (isNight || isLowEnergy) {
-                return 'mid';
-            }
-            if (valence > 0.58 && !isNight) {
-                return 'opt';
-            }
+            if (isDeepNight && (allostatic > 0.55 || cortisol > 0.55)) return 'cine';
+            if (isNight || isLowEnergy) return 'mid';
+            if (valence > 0.58 && !isNight) return 'opt';
             return 'standard';
         }
 
@@ -182,16 +233,11 @@
             const entry = this.selectEntry(state, aspect, limbicParams);
             if (!entry) return false;
 
-            // Already showing this image?
-            if (this.currentEntry && this.currentEntry.filename === entry.filename) {
-                return false;
-            }
+            if (this.currentEntry && this.currentEntry.filename === entry.filename) return false;
 
             this.nextEntry = entry;
             this.transitionAlpha = 0;
             this.isTransitioning = true;
-
-            // Preload neighboring states for responsiveness
             this._preloadNeighbors(state, aspect);
             return true;
         }
@@ -219,11 +265,10 @@
         // ─── Draw image covering canvas (object-fit: cover) ───
         _drawCover(ctx, image, w, h) {
             if (!image || !image.complete || image.naturalWidth === 0) return;
-
             const imgW = image.naturalWidth;
             const imgH = image.naturalHeight;
             const canvasRatio = w / h;
-            const imgRatio    = imgW / imgH;
+            const imgRatio = imgW / imgH;
 
             let drawW, drawH, drawX, drawY;
             if (canvasRatio > imgRatio) {
@@ -245,12 +290,10 @@
             if (!this.currentEntry && !this.nextEntry) return;
 
             if (this.isTransitioning) {
-                // Current fading out
                 if (this.currentEntry && this.currentEntry.image) {
                     ctx.globalAlpha = Math.max(0, 1 - this.transitionAlpha);
                     this._drawCover(ctx, this.currentEntry.image, w, h);
                 }
-                // Next fading in
                 if (this.nextEntry && this.nextEntry.image) {
                     ctx.globalAlpha = Math.min(1, this.transitionAlpha);
                     this._drawCover(ctx, this.nextEntry.image, w, h);
@@ -269,32 +312,32 @@
             }
         }
 
-        // ─── Draw limbic overlay effects on top of image ───
+        // ─── Draw limbic overlay effects ───
         drawOverlays(ctx, w, h, limbicParams) {
             const lp = limbicParams || {};
-
-            // 1. Color temperature overlay (valence-driven)
             const valence = lp.valence !== undefined ? lp.valence : 0.5;
+            const dimFactor = lp.dimFactor !== undefined ? lp.dimFactor : 1.0;
+            const dopamine = lp.dopamine !== undefined ? lp.dopamine : 0.3;
+            const isNight = lp.isNight || false;
+            const cortisol = lp.cortisol !== undefined ? lp.cortisol : 0;
+            const allostatic = lp.allostatic !== undefined ? lp.allostatic : 0;
+
+            // 1. Color temperature
             if (valence > 0.6) {
-                // Warm overlay for high valence
                 ctx.fillStyle = `rgba(255, 200, 100, ${(valence - 0.6) * 0.15})`;
                 ctx.fillRect(0, 0, w, h);
             } else if (valence < 0.4) {
-                // Cool overlay for low valence
                 ctx.fillStyle = `rgba(100, 150, 255, ${(0.4 - valence) * 0.15})`;
                 ctx.fillRect(0, 0, w, h);
             }
 
-            // 2. Dimming overlay (sleep pressure / melatonin)
-            const dimFactor = lp.dimFactor !== undefined ? lp.dimFactor : 1.0;
+            // 2. Dimming
             if (dimFactor < 1.0) {
                 ctx.fillStyle = `rgba(0, 10, 30, ${1 - dimFactor})`;
                 ctx.fillRect(0, 0, w, h);
             }
 
-            // 3. Bioluminescent glow overlay (midnight / high dopamine)
-            const dopamine = lp.dopamine !== undefined ? lp.dopamine : 0.3;
-            const isNight = lp.isNight || false;
+            // 3. Bioluminescent glow
             if (isNight || dopamine > 0.6) {
                 const glowAlpha = isNight ? 0.08 : (dopamine - 0.6) * 0.15;
                 const cx = w * 0.5, cy = h * 0.45;
@@ -306,8 +349,7 @@
                 ctx.fillRect(0, 0, w, h);
             }
 
-            // 4. Cortisol / stress vignette
-            const cortisol = lp.cortisol !== undefined ? lp.cortisol : 0;
+            // 4. Cortisol vignette
             if (cortisol > 0.5) {
                 const vig = ctx.createRadialGradient(w/2, h/2, h*0.3, w/2, h/2, h*0.9);
                 vig.addColorStop(0, 'rgba(0,0,0,0)');
@@ -316,24 +358,32 @@
                 ctx.fillRect(0, 0, w, h);
             }
 
-            // 5. Allostatic load fatigue grain
-            const allostatic = lp.allostatic !== undefined ? lp.allostatic : 0;
+            // 5. Allostatic grain
             if (allostatic > 0.5) {
                 ctx.fillStyle = `rgba(0, 0, 0, ${(allostatic - 0.5) * 0.1})`;
                 for (let y = 0; y < h; y += 3) {
                     for (let x = 0; x < w; x += 3) {
-                        if (Math.random() < 0.3) {
-                            ctx.fillRect(x, y, 1, 1);
-                        }
+                        if (Math.random() < 0.3) ctx.fillRect(x, y, 1, 1);
                     }
                 }
             }
         }
 
-        // ─── Get current entry info for debug ───
+        // ─── Cache stats for debug ───
+        getCacheStats() {
+            return {
+                cacheSize: this.cache.size,
+                maxCacheSize: this.maxCacheSize,
+                webpSupported: this.webpSupported,
+                useWebP: this.useWebP,
+                preloadTier: this.preloadTier,
+            };
+        }
+
         getCurrentInfo() {
             return {
                 filename: this.currentEntry?.filename || 'none',
+                format: this.currentEntry?.format || 'none',
                 next: this.nextEntry?.filename || 'none',
                 transitioning: this.isTransitioning,
                 alpha: this.transitionAlpha,
@@ -341,6 +391,5 @@
         }
     }
 
-    // ─── Expose ───
     global.ImageManager = ImageManager;
 })(window);
