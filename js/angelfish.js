@@ -75,7 +75,7 @@
             this.height = 110;
         }
 
-        update(dt, time, stateManager, bounds) {
+        update(dt, time, stateManager, bounds, limbicParams = {}) {
             const newState = stateManager.getState();
             if (newState !== this.state) {
                 this.state = newState;
@@ -85,30 +85,61 @@
             this.stateTime += dt;
             this.transition = Math.min(this.transition + dt * 2, 1);
 
+            // Store limbic params for draw()
+            this.limbic = limbicParams;
+
+            // ── Limbic-driven animation modifiers ──
+            const lp = limbicParams;
+            const hasLimbic = lp && Object.keys(lp).length > 0;
+
+            // Fin speed: base from state, scaled by arousal + erratic cortisol
+            let finSpeed = this._finSpeed();
+            if (hasLimbic) {
+                finSpeed *= (lp.speedMult || 0.5) * 2;
+                finSpeed += (lp.erratic || 0) * 4;   // high cortisol → frantic fins
+            }
+
+            // Tail speed linked to fin speed
+            let tailSpeed = finSpeed * 1.2;
+
+            // Hover amplitude: reduced by sleep pressure, boosted by arousal
+            let hoverAmp = this._hoverAmplitude();
+            if (hasLimbic) {
+                hoverAmp *= (lp.dimFactor || 1);
+                if (lp.grace > 0.5) hoverAmp *= 1.2;   // graceful = more flowing
+            }
+
             // Update animation phases
-            this.finPhase += dt * this._finSpeed();
-            this.tailPhase += dt * this._tailSpeed();
+            this.finPhase += dt * finSpeed;
+            this.tailPhase += dt * tailSpeed;
             this.breathPhase += dt * 1.5;
 
-            // Hover offset (gentle bobbing)
-            const hoverAmp = this._hoverAmplitude();
-            this.y += Math.sin(time * 1.2 + this.x * 0.01) * hoverAmp * dt;
+            // Hover offset with optional tremor from allostatic load
+            let tremorX = 0, tremorY = 0;
+            if (hasLimbic && lp.tremor > 0) {
+                tremorX = (Math.random() - 0.5) * lp.tremor * 20;
+                tremorY = (Math.random() - 0.5) * lp.tremor * 20;
+            }
+            this.y += Math.sin(time * 1.2 + this.x * 0.01) * hoverAmp * dt + tremorY * dt;
+            this.x += tremorX * dt;
 
-            // Movement behavior based on state
-            this._updateMovement(dt, time, bounds);
+            // Movement behavior: limbic can override target generation
+            this._updateMovement(dt, time, bounds, lp);
 
             // Boundary constraints
             this.x = Utils.clamp(this.x, this.width * 0.5, bounds.w - this.width * 0.5);
             this.y = Utils.clamp(this.y, this.height * 0.5, bounds.h - this.height * 0.3);
 
-            // Smooth angle toward velocity
+            // Smooth angle toward velocity, with posture tilt from dominance
             const targetAngle = Math.atan2(this.vy, this.vx);
+            let postureOffset = 0;
+            if (hasLimbic) postureOffset = lp.postureTilt || 0;
             if (Math.abs(this.vx) > 5 || Math.abs(this.vy) > 5) {
-                this.angle = Utils.lerpAngle(this.angle, targetAngle, dt * 3);
+                this.angle = Utils.lerpAngle(this.angle, targetAngle + postureOffset, dt * 3);
             }
 
-            // Update bubbles
-            this._updateBubbles(dt, time);
+            // Update bubbles with limbic bubble rate
+            this._updateBubbles(dt, time, lp);
 
             // Blink
             this.blinkTimer -= dt;
@@ -119,17 +150,30 @@
             }
         }
 
-        _updateMovement(dt, time, bounds) {
+        _updateMovement(dt, time, bounds, lp = {}) {
             const margin = 60;
             const cx = bounds.w * 0.5;
             const cy = bounds.h * 0.4;
+            const hasLimbic = lp && Object.keys(lp).length > 0;
+
+            // Limbic grace factor: 1 = smooth curves, 0 = jagged/erratic
+            const grace = hasLimbic ? (lp.grace || 0.5) : 0.5;
+            const erratic = hasLimbic ? (lp.erratic || 0) : 0;
+
+            // Base speeds with limbic scaling
+            let approachFactor = 1;
+            if (hasLimbic) {
+                approachFactor = (lp.speedMult || 0.5) * 2;
+                // Erratic fish switch targets faster
+                if (erratic > 0.5) approachFactor *= 1.5;
+            }
 
             switch (this.state) {
                 case 'idle':
                     // Gentle drift around center
                     this.targetX = cx + Math.sin(time * 0.3) * (bounds.w * 0.25);
                     this.targetY = cy + Math.sin(time * 0.5) * (bounds.h * 0.15);
-                    this._approachTarget(dt, 0.5);
+                    this._approachTarget(dt, 0.5 * approachFactor);
                     break;
 
                 case 'active':
@@ -137,7 +181,7 @@
                     this.targetX = (Math.sin(time * 0.6) > 0)
                         ? bounds.w - margin : margin;
                     this.targetY = cy + Math.sin(time * 0.8) * (bounds.h * 0.2);
-                    this._approachTarget(dt, 1.5);
+                    this._approachTarget(dt, 1.5 * approachFactor);
                     break;
 
                 case 'thinking':
@@ -145,35 +189,35 @@
                     const thinkR = 80;
                     this.targetX = cx + Math.cos(time * 0.4) * thinkR;
                     this.targetY = cy + 30 + Math.sin(time * 0.4) * thinkR * 0.5;
-                    this._approachTarget(dt, 0.4);
+                    this._approachTarget(dt, 0.4 * approachFactor);
                     break;
 
                 case 'success':
                     // Victory loop!
                     this.targetX = cx + Math.sin(time * 2.0) * 60;
                     this.targetY = cy - 50 + Math.cos(time * 2.0) * 40;
-                    this._approachTarget(dt, 1.0);
+                    this._approachTarget(dt, 1.0 * approachFactor);
                     break;
 
                 case 'error':
                     // Tight confused zigzags
                     this.targetX = this.x + (Math.sin(time * 4) * 100) * dt;
                     this.targetY = cy + Math.sin(time * 3) * 30;
-                    this._approachTarget(dt, 0.8);
+                    this._approachTarget(dt, 0.8 * approachFactor);
                     break;
 
                 case 'sleeping':
                     // Drift to bottom, barely move
                     this.targetX = cx + Math.sin(time * 0.1) * 20;
                     this.targetY = bounds.h - 120;
-                    this._approachTarget(dt, 0.3);
+                    this._approachTarget(dt, 0.3 * approachFactor);
                     break;
 
                 case 'alert':
                     // Quick dart toward "source" then hover
                     this.targetX = cx + Math.sin(time * 1.5) * 40;
                     this.targetY = cy - 40 + Math.sin(time * 2) * 20;
-                    this._approachTarget(dt, 1.2);
+                    this._approachTarget(dt, 1.2 * approachFactor);
                     break;
 
                 case 'learning':
@@ -181,21 +225,21 @@
                     const learnT = time * 0.5;
                     this.targetX = cx + Math.sin(learnT) * 100;
                     this.targetY = cy + Math.cos(learnT) * 60;
-                    this._approachTarget(dt, 0.6);
+                    this._approachTarget(dt, 0.6 * approachFactor);
                     break;
 
                 case 'connecting':
                     // Reaching outward motions
                     this.targetX = cx + Math.sin(time * 0.7) * (bounds.w * 0.3);
                     this.targetY = cy + Math.sin(time * 1.1) * (bounds.h * 0.2);
-                    this._approachTarget(dt, 0.9);
+                    this._approachTarget(dt, 0.9 * approachFactor);
                     break;
 
                 case 'busy':
                     // Rapid small movements, staying near center
                     this.targetX = cx + (Math.sin(time * 3) * 60 + Math.sin(time * 7) * 20);
                     this.targetY = cy + (Math.cos(time * 2.5) * 40 + Math.cos(time * 6) * 15);
-                    this._approachTarget(dt, 1.5);
+                    this._approachTarget(dt, 1.5 * approachFactor);
                     break;
             }
         }
@@ -242,9 +286,16 @@
         }
 
         // ─── Bubble emission ───
-        _updateBubbles(dt, time) {
+        _updateBubbles(dt, time, lp = {}) {
+            const hasLimbic = lp && Object.keys(lp).length > 0;
             const cfg = STATE_BUBBLES[this.state] || STATE_BUBBLES.idle;
-            this.bubbleTimer -= dt * cfg.rate;
+            let rate = cfg.rate;
+            if (hasLimbic) {
+                rate = lp.bubbleRate || cfg.rate;
+                // High erratic = chaotic bubble bursts
+                if (lp.erratic > 0.5) rate += lp.erratic * 3;
+            }
+            this.bubbleTimer -= dt * rate;
 
             if (this.bubbleTimer <= 0 && cfg.pattern !== 'none') {
                 this.bubbleTimer = Utils.rand(0.3, 0.8);
@@ -299,12 +350,45 @@
         _drawColor(ctx, time) {
             const colors = STATE_COLORS[this.state] || STATE_COLORS.idle;
             const breath = Math.sin(this.breathPhase) * 0.05 + 1;
+            const lp = this.limbic || {};
+            const hasLimbic = Object.keys(lp).length > 0;
+
+            // ── Apply limbic color temperature shift ──
+            let bodyColor = colors.body;
+            let accentColor = colors.accent;
+            let glowColor = colors.glow;
+            let glowBlur = 15 + Math.sin(time * 3) * 5;
+
+            if (hasLimbic) {
+                // Valence drives hue: cool (blue/purple) negative → warm (amber/gold) positive
+                const hue = lp.hue !== undefined ? lp.hue : 180;
+                const sat = lp.sat !== undefined ? lp.sat : 0.5;
+                const lit = lp.lit !== undefined ? lp.lit : 0.5;
+
+                // Blend state color toward limbic hue
+                const limbicColor = Utils.hslToHex(hue, sat * 100, lit * 100);
+                bodyColor = Utils.lerpColorHex(colors.body, limbicColor, 0.4);
+                accentColor = Utils.lerpColorHex(colors.accent, limbicColor, 0.3);
+
+                // Dimming from sleep pressure / melatonin
+                const dim = lp.dimFactor !== undefined ? lp.dimFactor : 1;
+                if (dim < 1) {
+                    bodyColor = Utils.darkenHex(bodyColor, dim);
+                    accentColor = Utils.darkenHex(accentColor, dim);
+                }
+
+                // Glow reduced by dimming
+                if (glowColor) {
+                    glowBlur *= dim;
+                    if (dim < 0.3) glowColor = null; // Too dim to glow
+                }
+            }
 
             // Body glow
-            if (colors.glow) {
+            if (glowColor) {
                 ctx.save();
-                ctx.shadowColor = colors.glow;
-                ctx.shadowBlur = 15 + Math.sin(time * 3) * 5;
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = glowBlur;
             }
 
             // ─── Main body (elongated diamond / angelfish shape) ───
@@ -316,7 +400,7 @@
             const dorsalH = 35;
             const dorsalSway = Math.sin(this.finPhase) * 3;
 
-            ctx.fillStyle = colors.body;
+            ctx.fillStyle = bodyColor;
             ctx.beginPath();
             ctx.moveTo(0, -bodyH * 0.3); // Neck
             ctx.quadraticCurveTo(-dorsalW * 0.5 + dorsalSway, -bodyH * 0.5 - dorsalH * 0.3,
@@ -346,7 +430,7 @@
 
             // Tail (caudal fin)
             const tailSway = Math.sin(this.tailPhase) * 8;
-            ctx.fillStyle = colors.body;
+            ctx.fillStyle = bodyColor;
             ctx.beginPath();
             ctx.moveTo(-2, -5);
             ctx.quadraticCurveTo(-15 + tailSway, -12, -25 + tailSway * 1.5, -18);
@@ -357,7 +441,7 @@
 
             // Pectoral fins (side)
             const pecSway = Math.sin(this.finPhase + 2) * 0.4;
-            ctx.fillStyle = colors.accent + '40'; // Transparent
+            ctx.fillStyle = accentColor + '40'; // Transparent
             ctx.beginPath();
             ctx.moveTo(bodyW * 0.4, -5);
             ctx.quadraticCurveTo(bodyW * 0.9, -15 + pecSway * 10,
@@ -391,7 +475,7 @@
             this._drawEye(ctx, this.state === 'sleeping');
 
             // Gill detail
-            ctx.strokeStyle = colors.accent + '60';
+            ctx.strokeStyle = accentColor + '60';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.arc(-bodyW * 0.5, 0, 6, -Math.PI * 0.3, Math.PI * 0.3);

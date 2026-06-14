@@ -133,6 +133,41 @@
             );
         },
 
+        // ── HSL → Hex conversion ──
+        hslToHex(h, s, l) {
+            s /= 100; l /= 100;
+            const k = n => (n + h / 30) % 12;
+            const a = s * Math.min(l, 1 - l);
+            const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+            const r = Math.round(f(0) * 255);
+            const g = Math.round(f(8) * 255);
+            const b = Math.round(f(4) * 255);
+            return Utils.rgbToHex(r, g, b);
+        },
+
+        rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+        },
+
+        // Darken a hex color by factor (0..1)
+        darkenHex(hex, factor) {
+            const c = Utils.hexToRgb(hex);
+            return Utils.rgbToString(
+                Math.round(c.r * factor),
+                Math.round(c.g * factor),
+                Math.round(c.b * factor)
+            );
+        },
+
+        // Hex lerp that returns hex
+        lerpColorHex(hexA, hexB, t) {
+            return Utils.rgbToHex(
+                Math.round(Utils.lerp(Utils.hexToRgb(hexA).r, Utils.hexToRgb(hexB).r, t)),
+                Math.round(Utils.lerp(Utils.hexToRgb(hexA).g, Utils.hexToRgb(hexB).g, t)),
+                Math.round(Utils.lerp(Utils.hexToRgb(hexA).b, Utils.hexToRgb(hexB).b, t))
+            );
+        },
+
         // ── Request Animation Frame wrapper with delta time ──
         createLoop(updateFn, renderFn) {
             let lastTime = performance.now();

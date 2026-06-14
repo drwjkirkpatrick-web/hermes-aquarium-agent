@@ -22,6 +22,11 @@
     // ─── State manager ───
     const stateManager = new StateManager();
 
+    // ─── Limbic bridge ───
+    const limbicBridge = new LimbicBridge();
+    let limbicParams = {};
+    const limbicIndicator = document.getElementById('limbicIndicator');
+
     // ─── Screen profile ───
     let profile = Utils.detectScreenProfile();
     let isEink = profile.eink || document.body.classList.contains('e-ink');
@@ -156,14 +161,23 @@
         // Update state manager
         stateManager.update(dt, time);
 
+        // Refresh limbic bridge every ~2 seconds (or when state changes)
+        if (Math.floor(time * 10) % 20 === 0) {
+            limbicParams = limbicBridge.refresh();
+            if (limbicIndicator) {
+                const affect = limbicParams.rawLimbic?.dominant_affect || '—';
+                limbicIndicator.textContent = ` | limbic: ${affect} (V${(limbicParams.valence*2-1).toFixed(2)} A${limbicParams.arousal.toFixed(2)})`;
+            }
+        }
+
         // Update environment
         plants.forEach(p => p.update(dt, time));
         rocks.forEach(r => { /* rocks are static */ });
         bubbles.forEach(b => b.update(dt, time));
         particles.forEach(p => p.update(dt, w, h));
 
-        // Update hero fish
-        heroFish.update(dt, time, stateManager, { w, h });
+        // Update hero fish (pass limbic params for nuanced behavior)
+        heroFish.update(dt, time, stateManager, { w, h }, limbicParams);
 
         // Update status overlay text
         const state = stateManager.getState();
