@@ -307,4 +307,4 @@ MIT — made for Hermes agent experimentation on Raspberry Pi.
 
 ## Author
 
-Walker Kirkpatrick — Oregon naturopathic physician, Hermes agent builder.
+Walker Kirkpatrick — Hermes agent builder.
